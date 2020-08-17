@@ -26,6 +26,8 @@ class CnblogsSpider(scrapy.Spider):
         post_nodes = response.css("div#news_list .news_block")[:1]
         for post_node in post_nodes:
             image_url = post_node.css(".entry_summary a img::attr(src)").extract_first("")
+            if image_url.startswith("//"):
+                image_url = "https:" + image_url
             post_url = post_node.css("h2 a::attr(href)").extract_first("")
             yield Request(url=parse.urljoin(response.url, post_url), meta={"front_image_url": image_url},
                           callback=self.parse_detail)
@@ -62,7 +64,8 @@ class CnblogsSpider(scrapy.Spider):
             cnblogsArticlespiderItem["content"] = response.css("#news_body").extract()[0]
             tag_list = response.css(".news_tags a::text").extract()
             cnblogsArticlespiderItem["tags"] = ','.join(tag_list)
-            cnblogsArticlespiderItem["front_image_url"] = response.meta.get("front_image_url", "")
+            # url下载地址必须传list
+            cnblogsArticlespiderItem["front_image_url"] = [response.meta.get("front_image_url", "")]
             cnblogsArticlespiderItem["url"] = response.url
             # html = requests.get(
             #     url=parse.urljoin(response.url, "/NewsAjax/GetAjaxNewsInfo?contentId={}".format(post_id)))
