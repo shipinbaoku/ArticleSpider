@@ -4,7 +4,6 @@ from urllib import parse
 
 import scrapy
 from scrapy import Request
-from scrapy.loader import ItemLoader
 
 from ArticleSpider.items import CnblogsArticlespiderItem, ArticleItemLoader
 from utils import common
@@ -79,22 +78,31 @@ class CnblogsSpider(scrapy.Spider):
             item_loader.add_css("tags", ".news_tags a::text")
             item_loader.add_value("front_image_url", response.meta.get("front_image_url", ""))
             item_loader.add_value("url", response.url)
-            cnblogsArticlespiderItem = item_loader.load_item()
+            # cnblogsArticlespiderItem = item_loader.load_item()
 
             yield Request(url=parse.urljoin(response.url, "/NewsAjax/GetAjaxNewsInfo?contentId={}".format(post_id)),
-                          meta={'cnblogsArticlespiderItem': cnblogsArticlespiderItem},
+                          meta={'item_loader': item_loader, "url": response.url},
                           callback=self.parse_num)
 
     pass
 
     def parse_num(self, response):
         j_data = json.loads(response.text)
-        cnblogsArticlespiderItem = response.meta.get("cnblogsArticlespiderItem", "")
-        cnblogsArticlespiderItem["parise_nums"] = j_data["DiggCount"]
-        cnblogsArticlespiderItem["fav_nums"] = j_data["TotalView"]
-        cnblogsArticlespiderItem["comment_nums"] = j_data["CommentCount"]
-        cnblogsArticlespiderItem["url_object_id"] = common.get_md5(cnblogsArticlespiderItem["url"])
+        item_loader = response.meta.get("item_loader", "")
+        item_loader.add_value("parise_nums", j_data["DiggCount"])
+        item_loader.add_value("fav_nums", j_data["TotalView"])
+        item_loader.add_value("comment_nums", j_data["CommentCount"])
+        item_loader.add_value("url_object_id", common.get_md5(response.meta.get("url", "")))
+        cnblogsArticlespiderItem = item_loader.load_item()
         # yield出去交给pipelines处理
         yield cnblogsArticlespiderItem
+    # cnblogsArticlespiderItem = response.meta.get("cnblogsArticlespiderItem", "")
+    # cnblogsArticlespiderItem["parise_nums"] = j_data["DiggCount"]
+    # cnblogsArticlespiderItem["fav_nums"] = j_data["TotalView"]
+    # cnblogsArticlespiderItem["comment_nums"] = j_data["CommentCount"]
+    # cnblogsArticlespiderItem["url_object_id"] = common.get_md5(cnblogsArticlespiderItem["url"])
+    # # yield出去交给pipelines处理
+    # yield cnblogsArticlespiderItem
 
-    pass
+
+pass
