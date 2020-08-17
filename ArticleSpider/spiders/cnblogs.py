@@ -4,8 +4,9 @@ from urllib import parse
 
 import scrapy
 from scrapy import Request
+from scrapy.loader import ItemLoader
 
-from ArticleSpider.items import CnblogsArticlespiderItem
+from ArticleSpider.items import CnblogsArticlespiderItem, ArticleItemLoader
 from utils import common
 
 
@@ -55,27 +56,31 @@ class CnblogsSpider(scrapy.Spider):
         # 为了防止列表页url出现不符合规范url格式出错，所以将元素的提取全部放入if中
         if match_re:
             post_id = match_re.group(1)
-            cnblogsArticlespiderItem = CnblogsArticlespiderItem()
-            cnblogsArticlespiderItem["title"] = response.css("#news_title a::text").extract_first("")
-            create_date = response.css("#news_info .time::text").extract_first("")
-            match_re = re.match(".*?(\d+.*)", create_date)
-            if match_re:
-                cnblogsArticlespiderItem["create_date"] = match_re.group(1)
-            cnblogsArticlespiderItem["content"] = response.css("#news_body").extract()[0]
-            tag_list = response.css(".news_tags a::text").extract()
-            cnblogsArticlespiderItem["tags"] = ','.join(tag_list)
-            # url下载地址必须传list
-            if response.meta.get("front_image_url", ""):
-                cnblogsArticlespiderItem["front_image_url"] = [response.meta.get("front_image_url", "")]
-            else:
-                cnblogsArticlespiderItem["front_image_url"] = []
-            cnblogsArticlespiderItem["url"] = response.url
-            # html = requests.get(
-            #     url=parse.urljoin(response.url, "/NewsAjax/GetAjaxNewsInfo?contentId={}".format(post_id)))
-            # j_data = json.loads(html.text)
-            # praise_nums = j_data["DiggCount"]
-            # view_nums = j_data["TotalView"]
-            # comment_nums = j_data["CommentCount"]
+            # cnblogsArticlespiderItem = CnblogsArticlespiderItem()
+            # cnblogsArticlespiderItem["title"] = response.css("#news_title a::text").extract_first("")
+            # create_date = response.css("#news_info .time::text").extract_first("")
+            # match_re = re.match(".*?(\d+.*)", create_date)
+            # if match_re:
+            #     cnblogsArticlespiderItem["create_date"] = match_re.group(1)
+            # cnblogsArticlespiderItem["content"] = response.css("#news_body").extract()[0]
+            # tag_list = response.css(".news_tags a::text").extract()
+            # cnblogsArticlespiderItem["tags"] = ','.join(tag_list)
+            # # url下载地址必须传list
+            # if response.meta.get("front_image_url", ""):
+            #     cnblogsArticlespiderItem["front_image_url"] = [response.meta.get("front_image_url", "")]
+            # else:
+            #     cnblogsArticlespiderItem["front_image_url"] = []
+            # cnblogsArticlespiderItem["url"] = response.url
+
+            item_loader = ArticleItemLoader(item=CnblogsArticlespiderItem(), response=response)
+            item_loader.add_css("title", "#news_title a::text")
+            item_loader.add_css("create_date", "#news_info .time::text")
+            item_loader.add_css("content", "#news_body")
+            item_loader.add_css("tags", ".news_tags a::text")
+            item_loader.add_value("front_image_url", response.meta.get("front_image_url", ""))
+            item_loader.add_value("url", response.url)
+            cnblogsArticlespiderItem = item_loader.load_item()
+
             yield Request(url=parse.urljoin(response.url, "/NewsAjax/GetAjaxNewsInfo?contentId={}".format(post_id)),
                           meta={'cnblogsArticlespiderItem': cnblogsArticlespiderItem},
                           callback=self.parse_num)
