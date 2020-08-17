@@ -68,7 +68,9 @@ ROBROBOTSTXT_OBEY = False
 ITEM_PIPELINES = {
     'ArticleSpider.pipelines.ArticlespiderPipeline': 300,
     # 重写scrapy.pipelines.images.ImagesPipeline 获取图片下载地址 给items
-    'ArticleSpider.pipelines.ArticleImagesPipeline': 1
+    'ArticleSpider.pipelines.ArticleImagesPipeline': 1,
+    # 'ArticleSpider.pipelines.JsonWithEncodingPipeline': 2,
+    'ArticleSpider.pipelines.MysqlPipeline': 3,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

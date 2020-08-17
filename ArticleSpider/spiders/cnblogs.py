@@ -65,7 +65,10 @@ class CnblogsSpider(scrapy.Spider):
             tag_list = response.css(".news_tags a::text").extract()
             cnblogsArticlespiderItem["tags"] = ','.join(tag_list)
             # url下载地址必须传list
-            cnblogsArticlespiderItem["front_image_url"] = [response.meta.get("front_image_url", "")]
+            if response.meta.get("front_image_url", ""):
+                cnblogsArticlespiderItem["front_image_url"] = [response.meta.get("front_image_url", "")]
+            else:
+                cnblogsArticlespiderItem["front_image_url"] = []
             cnblogsArticlespiderItem["url"] = response.url
             # html = requests.get(
             #     url=parse.urljoin(response.url, "/NewsAjax/GetAjaxNewsInfo?contentId={}".format(post_id)))

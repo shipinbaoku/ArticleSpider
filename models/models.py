@@ -25,7 +25,7 @@ class CnblogsArticle(BaseModel):
     tags = CharField(null=True)
     title = CharField()
     url = CharField()
-    url_object_id = CharField(primary_key=True)
+    url_object_id = CharField()
 
     class Meta:
         table_name = 'cnblogs_article'
