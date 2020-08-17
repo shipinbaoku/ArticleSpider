@@ -5,6 +5,9 @@ from urllib import parse
 import scrapy
 from scrapy import Request
 
+from ArticleSpider.items import CnblogsArticlespiderItem
+from utils import common
+
 
 class CnblogsSpider(scrapy.Spider):
     name = 'cnblogs'
@@ -49,12 +52,18 @@ class CnblogsSpider(scrapy.Spider):
         match_re = re.match(".*?(\d+)", response.url)
         # 为了防止列表页url出现不符合规范url格式出错，所以将元素的提取全部放入if中
         if match_re:
-            title = response.css("#news_title a::text").extract_first("")
-            create_data = response.css("#news_info .time::text").extract_first("")
-            content = response.css("#news_body").extract()[0]
-            tag_list = response.css(".news_tags a::text").extract()
-            tags = ','.join(tag_list)
             post_id = match_re.group(1)
+            cnblogsArticlespiderItem = CnblogsArticlespiderItem()
+            cnblogsArticlespiderItem["title"] = response.css("#news_title a::text").extract_first("")
+            create_date = response.css("#news_info .time::text").extract_first("")
+            match_re = re.match(".*?(\d+.*)", create_date)
+            if match_re:
+                cnblogsArticlespiderItem["create_date"] = match_re.group(1)
+            cnblogsArticlespiderItem["content"] = response.css("#news_body").extract()[0]
+            tag_list = response.css(".news_tags a::text").extract()
+            cnblogsArticlespiderItem["tags"] = ','.join(tag_list)
+            cnblogsArticlespiderItem["front_image_url"] = response.meta.get("front_image_url", "")
+            cnblogsArticlespiderItem["url"] = response.url
             # html = requests.get(
             #     url=parse.urljoin(response.url, "/NewsAjax/GetAjaxNewsInfo?contentId={}".format(post_id)))
             # j_data = json.loads(html.text)
@@ -62,14 +71,19 @@ class CnblogsSpider(scrapy.Spider):
             # view_nums = j_data["TotalView"]
             # comment_nums = j_data["CommentCount"]
             yield Request(url=parse.urljoin(response.url, "/NewsAjax/GetAjaxNewsInfo?contentId={}".format(post_id)),
+                          meta={'cnblogsArticlespiderItem': cnblogsArticlespiderItem},
                           callback=self.parse_num)
 
     pass
 
     def parse_num(self, response):
         j_data = json.loads(response.text)
-        praise_nums = j_data["DiggCount"]
-        view_nums = j_data["TotalView"]
-        comment_nums = j_data["CommentCount"]
+        cnblogsArticlespiderItem = response.meta.get("cnblogsArticlespiderItem", "")
+        cnblogsArticlespiderItem["parise_nums"] = j_data["DiggCount"]
+        cnblogsArticlespiderItem["fav_nums"] = j_data["TotalView"]
+        cnblogsArticlespiderItem["comment_nums"] = j_data["CommentCount"]
+        cnblogsArticlespiderItem["url_object_id"] = common.get_md5(cnblogsArticlespiderItem["url"])
+        # yield出去交给pipelines处理
+        yield cnblogsArticlespiderItem
 
     pass
