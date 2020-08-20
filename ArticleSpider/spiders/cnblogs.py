@@ -13,7 +13,11 @@ class CnblogsSpider(scrapy.Spider):
     name = 'cnblogs'
     allowed_domains = ['news.cnblogs.com']
     start_urls = ['https://news.cnblogs.com/']
-
+    custom_settings = {
+        "COOKIES_ENABLED": True,
+        'REDIRECT_ENABLED': False,
+        "DOWNLOAD_DELAY": 5
+    }
     def parse(self, response):
         """
         1,获取列表页中详情页url并交给scrapy进行下载后调用相应的解析方法
@@ -23,7 +27,7 @@ class CnblogsSpider(scrapy.Spider):
         """
         # urls = response.css("div#news_list h2 a::attr(href)").extract()
         # 获取post块，以便爬取详情页中无法获取的元素，另外可以使用css选择器或者xpath从post块中获取url
-        post_nodes = response.css("div#news_list .news_block")[:1]
+        post_nodes = response.css("div#news_list .news_block")
         for post_node in post_nodes:
             image_url = post_node.css(".entry_summary a img::attr(src)").extract_first("")
             if image_url.startswith("//"):
@@ -40,8 +44,8 @@ class CnblogsSpider(scrapy.Spider):
             yield Request(url=parse.urljoin(response.url, next_url), callback=self.parse)
         """
         # 获取下一页列表(调试的时候注释掉)
-        # next_url = response.xpath("//a[contains(text(),'Next >')]/@href").extract_first("")
-        # yield Request(url=parse.urljoin(response.url, next_url), callback=self.parse)
+        next_url = response.xpath("//a[contains(text(),'Next >')]/@href").extract_first("")
+        yield Request(url=parse.urljoin(response.url, next_url), callback=self.parse)
         pass
 
     def parse_detail(self, response):

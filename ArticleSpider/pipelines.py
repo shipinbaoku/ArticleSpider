@@ -10,7 +10,6 @@ import json
 
 from scrapy.pipelines.images import ImagesPipeline
 
-from models.models import CnblogsArticle
 from utils.common import json_serial
 
 
@@ -51,35 +50,44 @@ class JsonWithEncodingPipeline:
 
 
 class MysqlPipeline(object):
+
     def process_item(self, item, spider):
-        if CnblogsArticle.table_exists() == False:
-            CnblogsArticle.create_table()
-        try:
-            data = CnblogsArticle.get(CnblogsArticle.url_object_id == item["url_object_id"])
-            data.title = item["title"]
-            data.content = item["content"]
-            data.url = item["url"]
-            data.url_object_id = item["url_object_id"]
-            data.comment_nums = item["comment_nums"]
-            data.create_date = item["create_date"]
-            data.fav_nums = item["fav_nums"]
-            data.front_image_path = item["front_image_path"]
-            data.front_image_url = item["front_image_url"]
-            data.parise_nums = item["parise_nums"]
-            data.tags = item["tags"]
-            # data.save()
-        except:
-            data = CnblogsArticle()
-            data.title = item["title"]
-            data.content = item["content"]
-            data.url = item["url"]
-            data.url_object_id = item["url_object_id"]
-            data.comment_nums = item["comment_nums"]
-            data.create_date = item["create_date"]
-            data.fav_nums = item["fav_nums"]
-            data.front_image_path = item["front_image_path"]
-            data.front_image_url = item["front_image_url"]
-            data.parise_nums = item["parise_nums"]
-            data.tags = item["tags"]
-        data.save()
+        """
+        每个item中都实现save_into_sql()方法，就可以用同一个MysqlPipeline去处理
+        :param item:
+        :param spider:
+        :return:
+        """
+        item.save_into_sql()
         return item
+        # if CnblogsArticle.table_exists() == False:
+        #     CnblogsArticle.create_table()
+        # try:
+        #     data = CnblogsArticle.get(CnblogsArticle.url_object_id == item["url_object_id"])
+        #     data.title = item["title"]
+        #     data.content = item["content"]
+        #     data.url = item["url"]
+        #     data.url_object_id = item["url_object_id"]
+        #     data.comment_nums = item["comment_nums"]
+        #     data.create_date = item["create_date"]
+        #     data.fav_nums = item["fav_nums"]
+        #     data.front_image_path = item["front_image_path"]
+        #     data.front_image_url = item["front_image_url"]
+        #     data.parise_nums = item["parise_nums"]
+        #     data.tags = item["tags"]
+        #     # data.save()
+        # except:
+        #     data = CnblogsArticle()
+        #     data.title = item["title"]
+        #     data.content = item["content"]
+        #     data.url = item["url"]
+        #     data.url_object_id = item["url_object_id"]
+        #     data.comment_nums = item["comment_nums"]
+        #     data.create_date = item["create_date"]
+        #     data.fav_nums = item["fav_nums"]
+        #     data.front_image_path = item["front_image_path"]
+        #     data.front_image_url = item["front_image_url"]
+        #     data.parise_nums = item["parise_nums"]
+        #     data.tags = item["tags"]
+        # data.save()
+        # return item
