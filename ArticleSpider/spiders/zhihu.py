@@ -12,9 +12,8 @@ from scrapy.loader import ItemLoader
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
-
+from utils.user_login_info import ZhihuLogin,ttshitu
 from ArticleSpider.items import ZhihuQuestionItem, ZhihuAnswerItem
-from utils.user_login_info import ZhihuLogin, ttshitu
 
 
 class ZhihuSpider(scrapy.Spider):
@@ -32,6 +31,7 @@ class ZhihuSpider(scrapy.Spider):
         'REDIRECT_ENABLED': False,
         "DOWNLOAD_DELAY": 5
     }
+
 
     # question的第一页answer的请求url
     start_answer_url = "https://www.zhihu.com/api/v4/questions/{0}/answers?include=data%5B%2A%5D.is_normal%2Cadmin_closed_comment%2Creward_info%2Cis_collapsed%2Cannotation_action%2Cannotation_detail%2Ccollapse_reason%2Cis_sticky%2Ccollapsed_by%2Csuggest_edit%2Ccomment_count%2Ccan_comment%2Ccontent%2Ceditable_content%2Cvoteup_count%2Creshipment_settings%2Ccomment_permission%2Ccreated_time%2Cupdated_time%2Creview_info%2Crelevant_info%2Cquestion%2Cexcerpt%2Crelationship.is_authorized%2Cis_author%2Cvoting%2Cis_thanked%2Cis_nothelp%2Cis_labeled%2Cis_recognized%2Cpaid_info%2Cpaid_info_content%3Bdata%5B%2A%5D.mark_infos%5B%2A%5D.url%3Bdata%5B%2A%5D.author.follower_count%2Cbadge%5B%2A%5D.topics&limit={1}&offset={2}&platform=desktop&sort_by=default"
@@ -242,7 +242,7 @@ class ZhihuSpider(scrapy.Spider):
 
                         while True:
                             if code == "":
-                                code = base64_api(uname='lovelilili', pwd='880125love', img=img)
+                                code = base64_api(uname=ttshitu.uname, pwd=ttshitu.pwd, img=img)
                             else:
                                 break
                         browser.find_element_by_xpath(
