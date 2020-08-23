@@ -1,13 +1,26 @@
+
+
+
 from peewee import *
+from playhouse.pool import PooledMySQLDatabase
 
-database = MySQLDatabase('article_spider', **{'charset': 'utf8', 'sql_mode': 'PIPES_AS_CONCAT', 'use_unicode': True, 'host': '127.0.0.1', 'port': 3306, 'user': 'root', 'password': 'root'})
+# database = PooledMySQLDatabase('article_spider',
+#                                **{'charset': 'utf8', 'sql_mode': 'PIPES_AS_CONCAT', 'use_unicode': True,
+#                                   'host': '127.0.0.1', 'port': 3306, 'user': 'root', 'password': 'root'})
 
+
+# database = MySQLDatabase('article_spider', **{'charset': 'utf8', 'sql_mode': 'PIPES_AS_CONCAT', 'use_unicode': True, 'host': '127.0.0.1', 'port': 3306, 'user': 'root', 'password': 'root'})
+from models.retry_mySQLDatabase import RetryMySQLDatabase
+
+database = RetryMySQLDatabase.get_db_instance()
 class UnknownField(object):
     def __init__(self, *_, **__): pass
+
 
 class BaseModel(Model):
     class Meta:
         database = database
+
 
 class CnblogsArticle(BaseModel):
     comment_nums = IntegerField(constraints=[SQL("DEFAULT 0")])
@@ -24,4 +37,3 @@ class CnblogsArticle(BaseModel):
 
     class Meta:
         table_name = 'cnblogs_article'
-

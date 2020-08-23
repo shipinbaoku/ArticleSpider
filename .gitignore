@@ -2,3 +2,5 @@
 /venv/
 .idea/
 /utils/user_login_info.py
+job_info
+/ArticleSpider/cookies

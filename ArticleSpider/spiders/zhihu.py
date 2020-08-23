@@ -14,13 +14,16 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from utils.user_login_info import ZhihuLogin,ttshitu
 from ArticleSpider.items import ZhihuQuestionItem, ZhihuAnswerItem
-
+from  ArticleSpider.settings import USER_AGENT_LIST
 
 class ZhihuSpider(scrapy.Spider):
     name = 'zhihu'
     allowed_domains = ['www.zhihu.com']
     start_urls = ['https://www.zhihu.com/']
     login_success = False
+    # import random
+    # random_index = random.randint(0,len(USER_AGENT_LIST))
+    # random_ua = USER_AGENT_LIST[random_index]
     headers = {
         "HOST": "www.zhihu.com",
         "Referer": "https://www.zhizhu.com",

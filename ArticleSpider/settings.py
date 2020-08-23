@@ -17,8 +17,8 @@ NEWSPIDER_MODULE = 'ArticleSpider.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'ArticleSpider (+http://www.yourdomain.com)'
-USER_AGENT = 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'
-
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'
+RANDOM_UA_TYPE = "random"
 # Obey robots.txt rules
 # ROBROBOTSTXT_OBEY = True
 ROBROBOTSTXT_OBEY = False
@@ -29,7 +29,8 @@ ROBROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-# DOWNLOAD_DELAY = 3
+RANDOMIZE_DOWNLOAD_DELAY = True
+DOWNLOAD_DELAY = 10
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 16
 # CONCURRENT_REQUESTS_PER_IP = 16
@@ -58,7 +59,9 @@ COOKIES_DEBUG = True
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     # 'ArticleSpider.middlewares.ArticlespiderDownloaderMiddleware': 543,
-    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': 2,
+    # 取消默认的useragent
+    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+    'ArticleSpider.middlewares.RandomUserAgentMiddleware': 543,
 }
 
 # Enable or disable extensions
@@ -101,3 +104,7 @@ ITEM_PIPELINES = {
 IMAGES_STORE = os.path.join(current_dir, 'images')
 # 配置要下载的元素
 IMAGES_URLS_FIELD = "front_image_url"
+USER_AGENT_LIST = {
+    'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36',
+
+}

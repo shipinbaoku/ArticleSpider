@@ -1,9 +1,12 @@
 import json
 import re
+import time
 from urllib import parse
 
 import scrapy
 from scrapy import Request
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 from ArticleSpider.items import CnblogsArticlespiderItem, ArticleItemLoader
 from utils import common
@@ -16,8 +19,16 @@ class CnblogsSpider(scrapy.Spider):
     custom_settings = {
         "COOKIES_ENABLED": True,
         'REDIRECT_ENABLED': False,
+        'RANDOMIZE_DOWNLOAD_DELAY': True,
         "DOWNLOAD_DELAY": 5
     }
+
+    headers = {
+        # "HOST": "www.zhihu.com",
+        # "Referer": "https://www.zhizhu.com",
+        'User-Agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36"
+    }
+
     def parse(self, response):
         """
         1,获取列表页中详情页url并交给scrapy进行下载后调用相应的解析方法
@@ -88,8 +99,6 @@ class CnblogsSpider(scrapy.Spider):
                           meta={'item_loader': item_loader, "url": response.url},
                           callback=self.parse_num)
 
-    pass
-
     def parse_num(self, response):
         j_data = json.loads(response.text)
         item_loader = response.meta.get("item_loader", "")
@@ -100,13 +109,36 @@ class CnblogsSpider(scrapy.Spider):
         cnblogsArticlespiderItem = item_loader.load_item()
         # yield出去交给pipelines处理
         yield cnblogsArticlespiderItem
-    # cnblogsArticlespiderItem = response.meta.get("cnblogsArticlespiderItem", "")
-    # cnblogsArticlespiderItem["parise_nums"] = j_data["DiggCount"]
-    # cnblogsArticlespiderItem["fav_nums"] = j_data["TotalView"]
-    # cnblogsArticlespiderItem["comment_nums"] = j_data["CommentCount"]
-    # cnblogsArticlespiderItem["url_object_id"] = common.get_md5(cnblogsArticlespiderItem["url"])
-    # # yield出去交给pipelines处理
-    # yield cnblogsArticlespiderItem
 
-
-pass
+    def start_requests(self):
+        chrome_option = Options()
+        chrome_option.add_experimental_option('debuggerAddress', '127.0.0.1:9222')
+        browser = webdriver.Chrome(executable_path="E:/pythonProject/seleniumdriver/chromedriver.exe",
+                                   options=chrome_option)
+        # browser.fullscreen_window()
+        browser.get("https://news.cnblogs.com/")
+        time.sleep(5)
+        try:
+            browser.find_element_by_xpath('//*[@id="msg_count"]')
+            self.login_success = True
+            Cookies = browser.get_cookies()
+            # print(Cookies)
+            cookie_dict = {}
+            import pickle
+            for cookie in Cookies:
+                # 写入文件
+                # 此处大家修改一下自己文件的所在路径
+                # f = open('E:/pythonProject/ArticleSpider/ArticleSpider/cookies' + cookie['name'] + '.zhihu',
+                #          'wb')
+                f = open('E:/pythonProject/ArticleSpider/ArticleSpider/cookies/cnblogs/' + cookie['name'] + '.cnblog',
+                         'wb')
+                # open('./ArticleSpider/cookies/zhihu/' + cookie['name'] + '.zhihu', 'wb')
+                pickle.dump(cookie, f)
+                f.close()
+                cookie_dict[cookie['name']] = cookie['value']
+            # browser.close()
+            print(cookie_dict)
+            return [
+                scrapy.Request(url=self.start_urls[0], dont_filter=False, headers=self.headers, cookies=cookie_dict)]
+        except:
+            pass

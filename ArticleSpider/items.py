@@ -23,8 +23,19 @@ class ArticlespiderItem(scrapy.Item):
 """
 
 
+
+class TakeFirstCustom(TakeFirst):
+    """
+    处理采集的元素不存在问题
+    """
+    def __call__(self, values):
+        for value in values:
+            if value is not None and value != '':
+                return value.strip() if isinstance(value, str) else value
+
+
 class ArticleItemLoader(ItemLoader):
-    default_output_processor = TakeFirst()
+    default_output_processor = TakeFirstCustom()
 
 
 def date_convert(value):
